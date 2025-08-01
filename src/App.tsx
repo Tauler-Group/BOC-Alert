@@ -313,8 +313,8 @@ Fecha: ${new Date().toLocaleString('es-ES')}`,
                 <h3 className="text-2xl font-bold text-[#0066CC] mb-2">Instituciones</h3>
                 <p className="text-gray-600">Para Instituciones públicas</p>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold text-[#0066CC]">399€</span>
-                  <span className="text-gray-600">/mes</span>
+                  <span className="text-4xl font-bold text-[#0066CC]">Contactar para obtener presupuesto</span>
+                  <span className="text-gray-600"></span>
                 </div>
               </div>
               <ul className="space-y-3 mb-6">
