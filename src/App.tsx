@@ -1,8 +1,14 @@
 import React, { useState } from 'react';
+import { Routes, Route, useLocation, Link } from 'react-router-dom';
 import { Bell, Clock, Target, CheckCircle, Mail, Phone, Shield, Users, Building, ArrowRight, Menu, X } from 'lucide-react';
-import emailjs from '@emailjs/browser';
+import { FORMSPREE_CONFIG } from './formspree-config';
+import { useCookieConsent } from './hooks/useCookieConsent';
+import { CookieBanner } from './components/CookieBanner';
+import { PrivacyPolicy } from './pages/PrivacyPolicy';
+import { CookiePolicy } from './pages/CookiePolicy';
+import { LegalNotice } from './pages/LegalNotice';
 
-function App() {
+function HomePage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [email, setEmail] = useState('');
   const [topics, setTopics] = useState('');
@@ -15,34 +21,35 @@ function App() {
     setSubmitMessage('');
     
     try {
-      // Configuración de EmailJS
-      const templateParams = {
-        to_email: 'info@taulergroup.com',
-        from_email: email,
-        user_email: email,
-        topics: topics || 'No especificados',
-        message: `Nueva suscripción a BOC Alert:
-        
+      // Usar Formspree para enviar el correo directamente a info@taulergroup.com
+      const response = await fetch(FORMSPREE_CONFIG.ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email,
+          topics: topics || 'No especificados',
+          message: `Nueva suscripción a BOC Alert:
+          
 Email: ${email}
 Temas de interés: ${topics || 'No especificados'}
 Fecha: ${new Date().toLocaleString('es-ES')}`,
-        reply_to: email
-      };
+          _replyto: email,
+          _subject: 'Nueva suscripción a BOC Alert'
+        }),
+      });
 
-      // Enviar email usando EmailJS
-      await emailjs.send(
-        'YOUR_SERVICE_ID', // Reemplazar con tu Service ID
-        'YOUR_TEMPLATE_ID', // Reemplazar con tu Template ID
-        templateParams,
-        'YOUR_PUBLIC_KEY' // Reemplazar con tu Public Key
-      );
-
-      setIsSubmitting(false);
-      setEmail('');
-      setTopics('');
-      setSubmitMessage('¡Gracias por suscribirte! Te enviaremos un email de confirmación pronto.');
+      if (response.ok) {
+        setIsSubmitting(false);
+        setEmail('');
+        setTopics('');
+        setSubmitMessage('¡Gracias por suscribirte! Te contactaremos pronto para configurar tus alertas.');
+      } else {
+        throw new Error('Error en el envío');
+      }
     } catch (error) {
-      console.error('Error al enviar el email:', error);
+      console.error('Error al enviar el formulario:', error);
       setIsSubmitting(false);
       setSubmitMessage('Ha ocurrido un error. Por favor, inténtalo de nuevo o contacta directamente con info@taulergroup.com');
     }
@@ -391,19 +398,19 @@ Fecha: ${new Date().toLocaleString('es-ES')}`,
               <h4 className="text-lg font-semibold mb-4">Enlaces útiles</h4>
               <ul className="space-y-2">
                 <li>
-                  <a href="#" className="text-gray-300 hover:text-white transition-colors">
+                  <Link to="/politica-privacidad" className="text-gray-300 hover:text-white transition-colors">
                     Política de privacidad
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-300 hover:text-white transition-colors">
-                    Términos y condiciones
-                  </a>
+                  <Link to="/politica-cookies" className="text-gray-300 hover:text-white transition-colors">
+                    Política de cookies
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-300 hover:text-white transition-colors">
-                    Preguntas frecuentes
-                  </a>
+                  <Link to="/aviso-legal" className="text-gray-300 hover:text-white transition-colors">
+                    Aviso legal
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -424,11 +431,42 @@ Fecha: ${new Date().toLocaleString('es-ES')}`,
             </div>
           </div>
           <div className="border-t border-gray-600 mt-8 pt-8 text-center text-gray-300">
-            <p>&copy; 2024 BOC Alert - Tauler Group. Todos los derechos reservados.</p>
+            <p>&copy; 2024 BOC Alert - Tauler Group Ventures S.L. Todos los derechos reservados.</p>
           </div>
         </div>
       </footer>
     </div>
+  );
+}
+
+function App() {
+  const location = useLocation();
+  const { showBanner, acceptAll, acceptNecessary, acceptCustom } = useCookieConsent();
+
+  // Componente de navegación para volver a la página principal
+  const goHome = () => {
+    window.location.href = '/';
+  };
+
+  return (
+    <>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/politica-privacidad" element={<PrivacyPolicy onBack={goHome} />} />
+        <Route path="/politica-cookies" element={<CookiePolicy onBack={goHome} />} />
+        <Route path="/aviso-legal" element={<LegalNotice onBack={goHome} />} />
+      </Routes>
+      
+      {/* Banner de cookies - se muestra en todas las páginas */}
+      {showBanner && (
+        <CookieBanner
+          onAcceptAll={acceptAll}
+          onAcceptNecessary={acceptNecessary}
+          onAcceptCustom={acceptCustom}
+          onClose={() => {}} // El hook maneja el cierre automáticamente
+        />
+      )}
+    </>
   );
 }
 

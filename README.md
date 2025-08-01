@@ -6,57 +6,40 @@ Landing page moderna y minimalista para BOC Alert, un servicio de notificaciones
 
 - Diseño responsive y moderno
 - Colores de la bandera de Canarias (azul #0066CC y amarillo #FFD700)
-- Formulario de contacto integrado con EmailJS
+- Formulario de contacto integrado con Formspree
 - Animaciones sutiles y transiciones suaves
 - SEO optimizado
 
-## 📧 Configuración de EmailJS
+## 📧 Configuración del Formulario de Contacto
 
-Para que el formulario de contacto funcione, necesitas configurar EmailJS:
+Para que el formulario de contacto funcione, necesitas configurar Formspree (mucho más simple que EmailJS):
 
-### 1. Crear cuenta en EmailJS
-- Ve a [https://www.emailjs.com/](https://www.emailjs.com/)
+### 1. Crear cuenta en Formspree
+- Ve a [https://formspree.io/](https://formspree.io/)
 - Crea una cuenta gratuita
 
-### 2. Configurar servicio de email
-- En el dashboard, ve a "Email Services"
-- Añade un nuevo servicio (Gmail, Outlook, etc.)
-- Configura tu email info@taulergroup.com
+### 2. Crear un nuevo formulario
+- En el dashboard, haz clic en "New Form"
+- Ingresa tu email: `info@taulergroup.com`
+- Formspree te dará un endpoint único
 
-### 3. Crear plantilla de email
-- Ve a "Email Templates"
-- Crea una nueva plantilla con este contenido:
+### 3. Configurar el endpoint
+- Copia el endpoint que te proporciona (formato: `https://formspree.io/f/XXXXXXXX`)
+- Abre el archivo `src/formspree-config.ts`
+- Reemplaza `XXXXXXXX` en la URL con tu endpoint ID real
 
-**Asunto:** Nueva suscripción a BOC Alert
-
-**Contenido:**
-```
-Hola,
-
-Has recibido una nueva suscripción a BOC Alert:
-
-Email del usuario: {{from_email}}
-Temas de interés: {{topics}}
-
-Mensaje completo:
-{{message}}
-
-Fecha: {{date}}
-
-Saludos,
-Sistema BOC Alert
+**Ejemplo:**
+Si tu endpoint es `https://formspree.io/f/xpwzgqzb`, entonces:
+```typescript
+export const FORMSPREE_CONFIG = {
+  ENDPOINT: 'https://formspree.io/f/xpwzgqzb',
+};
 ```
 
-### 4. Obtener credenciales
-- **Service ID**: En "Email Services"
-- **Template ID**: En "Email Templates" 
-- **Public Key**: En "Account" > "API Keys"
-
-### 5. Actualizar configuración
-Reemplaza en `src/App.tsx` los siguientes valores:
-- `YOUR_SERVICE_ID` por tu Service ID real
-- `YOUR_TEMPLATE_ID` por tu Template ID real  
-- `YOUR_PUBLIC_KEY` por tu Public Key real
+### 4. ¡Listo!
+- Los correos llegarán directamente a `info@taulergroup.com`
+- Formspree incluye automáticamente protección anti-spam
+- Plan gratuito: 50 envíos/mes (más que suficiente para empezar)
 
 ## 🛠️ Desarrollo
 
