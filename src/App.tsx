@@ -217,8 +217,31 @@ Fecha: ${new Date().toLocaleString('es-ES')}`,
         </div>
       </section>
 
+      {/* Email Example Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-[#0066CC] mb-4">
+              Así recibirás tus alertas
+            </h2>
+            <p className="text-xl text-gray-600">
+              Ejemplo real de cómo llegan las notificaciones del BOC a tu email
+            </p>
+          </div>
+          <div className="flex justify-center">
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200 max-w-2xl w-full">
+              <img 
+                src="/boc-email-example.png" 
+                alt="Ejemplo de email con alertas del BOC"
+                className="w-full h-auto"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* How it works Section */}
-      <section id="how-it-works" className="py-20 bg-white">
+      <section id="how-it-works" className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl md:text-4xl font-bold text-center text-[#0066CC] mb-16">
             Cómo funciona
@@ -297,7 +320,7 @@ Fecha: ${new Date().toLocaleString('es-ES')}`,
               <ul className="space-y-3 mb-6">
                 <li className="flex items-center space-x-2">
                   <CheckCircle className="h-5 w-5 text-[#FFD700]" />
-                  <span>Alertas ilimitadas</span>
+                  <span>Usuarios y alertas ilimitados</span>
                 </li>
                 <li className="flex items-center space-x-2">
                   <CheckCircle className="h-5 w-5 text-[#FFD700]" />
@@ -307,10 +330,7 @@ Fecha: ${new Date().toLocaleString('es-ES')}`,
                   <CheckCircle className="h-5 w-5 text-[#FFD700]" />
                   <span>Soporte prioritario</span>
                 </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="h-5 w-5 text-[#FFD700]" />
-                  <span>Usuarios ilimitados</span>
-                </li>
+
               </ul>
               <button className="w-full bg-[#0066CC] text-white py-3 rounded-lg font-semibold hover:bg-[#004499] transition-colors">
                 Contactar
