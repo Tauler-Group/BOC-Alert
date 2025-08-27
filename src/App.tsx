@@ -14,59 +14,104 @@ function HomePage() {
   const [topics, setTopics] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState('');
+  
+  // Contact popup state
+  const [showContactPopup, setShowContactPopup] = useState(false);
+  const [contactForm, setContactForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    institution: '',
+    topics: ''
+  });
+  const [isContactSubmitting, setIsContactSubmitting] = useState(false);
+  const [contactSubmitMessage, setContactSubmitMessage] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitMessage('');
-    
+
     try {
-      // Usar Formspree para enviar el correo directamente a info@taulergroup.com
-      const response = await fetch(FORMSPREE_CONFIG.ENDPOINT, {
+      const response = await fetch('https://formspree.io/f/xpzgwqgw', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: email,
-          topics: topics || 'No especificados',
-          message: `Nueva suscripción a BOC Alert:
-          
-Email: ${email}
-Temas de interés: ${topics || 'No especificados'}
-Fecha: ${new Date().toLocaleString('es-ES')}`,
-          _replyto: email,
-          _subject: 'Nueva suscripción a BOC Alert'
+          email,
+          topics,
+          type: 'subscription'
         }),
       });
 
       if (response.ok) {
-        setIsSubmitting(false);
+        setSubmitMessage('¡Gracias por suscribirte! Te contactaremos pronto para configurar tus alertas.');
         setEmail('');
         setTopics('');
-        setSubmitMessage('¡Gracias por suscribirte! Te contactaremos pronto para configurar tus alertas.');
       } else {
-        throw new Error('Error en el envío');
+        setSubmitMessage('Error al enviar el formulario. Por favor, inténtalo de nuevo.');
       }
     } catch (error) {
-      console.error('Error al enviar el formulario:', error);
+      setSubmitMessage('Error al enviar el formulario. Por favor, inténtalo de nuevo.');
+    } finally {
       setIsSubmitting(false);
-      setSubmitMessage('Ha ocurrido un error. Por favor, inténtalo de nuevo o contacta directamente con info@taulergroup.com');
+    }
+  };
+
+  const handleContactSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsContactSubmitting(true);
+
+    try {
+      const response = await fetch('https://formspree.io/f/xpzgwqgw', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...contactForm,
+          type: 'institution_contact'
+        }),
+      });
+
+      if (response.ok) {
+        setContactSubmitMessage('¡Gracias por contactarnos! Te responderemos pronto.');
+        setContactForm({
+          name: '',
+          email: '',
+          phone: '',
+          institution: '',
+          topics: ''
+        });
+        setShowContactPopup(false);
+      } else {
+        setContactSubmitMessage('Error al enviar el formulario. Por favor, inténtalo de nuevo.');
+      }
+    } catch (error) {
+      setContactSubmitMessage('Error al enviar el formulario. Por favor, inténtalo de nuevo.');
+    } finally {
+      setIsContactSubmitting(false);
     }
   };
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      const headerHeight = 64; // 64px = h-16
+      const elementPosition = element.offsetTop - headerHeight;
+      window.scrollTo({
+        top: elementPosition,
+        behavior: 'smooth'
+      });
     }
     setIsMenuOpen(false);
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pt-16">
       {/* Header */}
-      <header className="relative bg-white shadow-sm">
+      <header className="fixed top-0 left-0 right-0 bg-white shadow-sm z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
@@ -97,10 +142,10 @@ Fecha: ${new Date().toLocaleString('es-ES')}`,
                 Precios
               </button>
               <button 
-                onClick={() => scrollToSection('subscribe')}
+                onClick={() => setShowContactPopup(true)}
                 className="bg-[#FFD700] text-[#0066CC] px-4 py-2 rounded-lg hover:bg-[#FFC700] transition-colors font-semibold"
               >
-                Suscribirme
+                Contactar
               </button>
             </nav>
 
@@ -137,10 +182,10 @@ Fecha: ${new Date().toLocaleString('es-ES')}`,
                 Precios
               </button>
               <button 
-                onClick={() => scrollToSection('subscribe')}
+                onClick={() => setShowContactPopup(true)}
                 className="bg-[#FFD700] text-[#0066CC] px-4 py-2 rounded-lg hover:bg-[#FFC700] transition-colors text-left font-semibold"
               >
-                Suscribirme
+                Contactar
               </button>
             </nav>
           </div>
@@ -179,47 +224,9 @@ Fecha: ${new Date().toLocaleString('es-ES')}`,
         </div>
       </section>
 
-      {/* Benefits Section */}
-      <section id="benefits" className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl md:text-4xl font-bold text-center text-[#0066CC] mb-16">
-            ¿Por qué elegir BOC Alert?
-          </h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center group">
-              <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 group-hover:scale-105">
-                <div className="bg-[#FFD700] p-3 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                  <Clock className="h-8 w-8 text-[#0066CC]" />
-                </div>
-                <h3 className="text-xl font-semibold text-[#0066CC] mb-3">Ahorra tiempo</h3>
-                <p className="text-gray-600">No más búsquedas manuales diarias. Te enviamos solo lo relevante para ti.</p>
-              </div>
-            </div>
-            <div className="text-center group">
-              <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 group-hover:scale-105">
-                <div className="bg-[#FFD700] p-3 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                  <Target className="h-8 w-8 text-[#0066CC]" />
-                </div>
-                <h3 className="text-xl font-semibold text-[#0066CC] mb-3">Notificaciones relevantes</h3>
-                <p className="text-gray-600">Solo recibe información sobre los temas que realmente te interesan.</p>
-              </div>
-            </div>
-            <div className="text-center group">
-              <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 group-hover:scale-105">
-                <div className="bg-[#FFD700] p-3 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                  <CheckCircle className="h-8 w-8 text-[#0066CC]" />
-                </div>
-                <h3 className="text-xl font-semibold text-[#0066CC] mb-3">Fácil de usar</h3>
-                <p className="text-gray-600">Todo por email, sin necesidad de instalar aplicaciones o complicaciones.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Email Example Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="benefits" className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-[#0066CC] mb-4">
               Así recibirás tus alertas
@@ -228,13 +235,55 @@ Fecha: ${new Date().toLocaleString('es-ES')}`,
               Ejemplo real de cómo llegan las notificaciones del BOC a tu email
             </p>
           </div>
-          <div className="flex justify-center">
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200 max-w-2xl w-full">
-              <img 
-                src="/boc-email-example.png" 
-                alt="Ejemplo de email con alertas del BOC"
-                className="w-full h-auto"
-              />
+          
+          <div className="space-y-12">
+            {/* Screenshot */}
+            <div className="flex justify-center">
+              <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200 max-w-5xl w-full">
+                <img 
+                  src="/boc-email-example.png" 
+                  alt="Ejemplo de email con alertas del BOC"
+                  className="w-full h-auto"
+                />
+              </div>
+            </div>
+            
+            {/* Benefits */}
+            <div className="text-center">
+              <h3 className="text-2xl font-bold text-[#0066CC] mb-8">
+                ¿Por qué elegir BOC Alert?
+              </h3>
+              <div className="grid md:grid-cols-3 gap-8">
+                <div className="flex flex-col items-center space-y-4">
+                  <div className="bg-[#FFD700] p-3 rounded-full w-16 h-16 flex items-center justify-center">
+                    <Clock className="h-8 w-8 text-[#0066CC]" />
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-semibold text-[#0066CC] mb-2">Ahorra tiempo</h4>
+                    <p className="text-gray-600">No más búsquedas manuales diarias. Te enviamos solo lo relevante para ti.</p>
+                  </div>
+                </div>
+                
+                <div className="flex flex-col items-center space-y-4">
+                  <div className="bg-[#FFD700] p-3 rounded-full w-16 h-16 flex items-center justify-center">
+                    <Target className="h-8 w-8 text-[#0066CC]" />
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-semibold text-[#0066CC] mb-2">Notificaciones relevantes</h4>
+                    <p className="text-gray-600">Solo recibe información sobre los temas que realmente te interesan.</p>
+                  </div>
+                </div>
+                
+                <div className="flex flex-col items-center space-y-4">
+                  <div className="bg-[#FFD700] p-3 rounded-full w-16 h-16 flex items-center justify-center">
+                    <CheckCircle className="h-8 w-8 text-[#0066CC]" />
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-semibold text-[#0066CC] mb-2">Fácil de usar</h4>
+                    <p className="text-gray-600">Todo por email, sin necesidad de instalar aplicaciones o complicaciones.</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -246,34 +295,58 @@ Fecha: ${new Date().toLocaleString('es-ES')}`,
           <h2 className="text-3xl md:text-4xl font-bold text-center text-[#0066CC] mb-16">
             Cómo funciona
           </h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="bg-[#0066CC] text-white w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">
-                1
+          
+          {/* Timeline Layout */}
+          <div className="relative">
+            {/* Connecting Line */}
+            <div className="hidden md:block absolute top-10 left-1/2 transform -translate-x-1/2 w-full max-w-4xl h-0.5 bg-gradient-to-r from-[#0066CC] via-[#FFD700] to-[#0066CC]"></div>
+            
+            <div className="grid md:grid-cols-3 gap-8 relative">
+              {/* Step 1 */}
+              <div className="text-center relative">
+                <div className="relative z-10">
+                  <div className="bg-gradient-to-br from-[#0066CC] to-[#004499] text-white w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6 shadow-lg border-4 border-white">
+                    1
+                  </div>
+                  <h3 className="text-xl font-semibold text-[#0066CC] mb-4">Suscríbete</h3>
+                  <p className="text-gray-600 leading-relaxed">Regístrate con tu email y especifica los temas de interés que quieres seguir de forma personalizada.</p>
+                </div>
               </div>
-              <h3 className="text-xl font-semibold text-[#0066CC] mb-3">Suscríbete</h3>
-              <p className="text-gray-600">Regístrate con tu email y especifica los temas de interés que quieres seguir.</p>
+              
+              {/* Step 2 */}
+              <div className="text-center relative">
+                <div className="relative z-10">
+                  <div className="bg-gradient-to-br from-[#FFD700] to-[#FFC700] text-[#0066CC] w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6 shadow-lg border-4 border-white">
+                    2
+                  </div>
+                  <h3 className="text-xl font-semibold text-[#0066CC] mb-4">Monitorizamos</h3>
+                  <p className="text-gray-600 leading-relaxed">BOC Alert revisa automáticamente el BOC cada mañana buscando contenido relevante para ti.</p>
+                </div>
+              </div>
+              
+              {/* Step 3 */}
+              <div className="text-center relative">
+                <div className="relative z-10">
+                  <div className="bg-gradient-to-br from-[#0066CC] to-[#004499] text-white w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6 shadow-lg border-4 border-white">
+                    3
+                  </div>
+                  <h3 className="text-xl font-semibold text-[#0066CC] mb-4">Recibe alertas</h3>
+                  <p className="text-gray-600 leading-relaxed">Te enviamos un email diario con un resumen de todas las publicaciones que te afectan.</p>
+                </div>
+              </div>
             </div>
-            <div className="text-center">
-              <div className="bg-[#0066CC] text-white w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">
-                2
-              </div>
-              <h3 className="text-xl font-semibold text-[#0066CC] mb-3">Monitorizamos</h3>
-              <p className="text-gray-600">BOC Alert revisa automáticamente el BOC cada mañana buscando contenido relevante.</p>
-            </div>
-            <div className="text-center">
-              <div className="bg-[#0066CC] text-white w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">
-                3
-              </div>
-              <h3 className="text-xl font-semibold text-[#0066CC] mb-3">Recibe alertas</h3>
-              <p className="text-gray-600">Te enviamos un email diario con un resumen de todas las publicaciones que te afectan.</p>
+            
+            {/* Mobile connecting lines */}
+            <div className="md:hidden flex justify-center space-x-4 mt-8">
+              <div className="w-8 h-0.5 bg-gradient-to-r from-[#0066CC] to-[#FFD700]"></div>
+              <div className="w-8 h-0.5 bg-gradient-to-r from-[#FFD700] to-[#0066CC]"></div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-20 bg-gray-50">
+      <section id="pricing" className="py-20 bg-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl md:text-4xl font-bold text-center text-[#0066CC] mb-16">
             Planes adaptados a tus necesidades
@@ -282,12 +355,12 @@ Fecha: ${new Date().toLocaleString('es-ES')}`,
             <div className="bg-white p-8 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
               <div className="text-center mb-6">
                 <Users className="h-12 w-12 text-[#FFD700] mx-auto mb-4" />
-                <h3 className="text-2xl font-bold text-[#0066CC] mb-2">Profesionales</h3>
-                <p className="text-gray-600">Para empresas y autónomos</p>
-                <div className="mt-4">
-                  <span className="text-4xl font-bold text-[#0066CC]">29€</span>
-                  <span className="text-gray-600">/mes</span>
-                </div>
+                <h3 className="text-2xl font-bold text-[#0066CC] mb-2">Individual</h3>
+                                   <p className="text-gray-600">Para profesionales y autónomos</p>
+                   <div className="mt-4">
+                     <span className="text-4xl font-bold text-[#0066CC]">45€</span>
+                     <span className="text-gray-600">/mes</span>
+                   </div>
               </div>
               <ul className="space-y-3 mb-6">
                 <li className="flex items-center space-x-2">
@@ -296,7 +369,7 @@ Fecha: ${new Date().toLocaleString('es-ES')}`,
                 </li>
                 <li className="flex items-center space-x-2">
                   <CheckCircle className="h-5 w-5 text-[#FFD700]" />
-                  <span>Hasta 10 temas de interés</span>
+                  <span>Hasta 5 temas de interés</span>
                 </li>
                 <li className="flex items-center space-x-2">
                   <CheckCircle className="h-5 w-5 text-[#FFD700]" />
@@ -311,10 +384,10 @@ Fecha: ${new Date().toLocaleString('es-ES')}`,
               <div className="text-center mb-6">
                 <Building className="h-12 w-12 text-[#FFD700] mx-auto mb-4" />
                 <h3 className="text-2xl font-bold text-[#0066CC] mb-2">Instituciones</h3>
-                <p className="text-gray-600">Para Instituciones públicas</p>
+                <p className="text-gray-600">Para empresas y administraciones</p>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold text-[#0066CC]">Contactar para obtener presupuesto</span>
-                  <span className="text-gray-600"></span>
+                  <span className="text-4xl font-bold text-[#0066CC]">395€</span>
+                  <span className="text-gray-600">/mes</span>
                 </div>
               </div>
               <ul className="space-y-3 mb-6">
@@ -332,7 +405,10 @@ Fecha: ${new Date().toLocaleString('es-ES')}`,
                 </li>
 
               </ul>
-              <button className="w-full bg-[#0066CC] text-white py-3 rounded-lg font-semibold hover:bg-[#004499] transition-colors">
+              <button 
+                onClick={() => setShowContactPopup(true)}
+                className="w-full bg-[#0066CC] text-white py-3 rounded-lg font-semibold hover:bg-[#004499] transition-colors"
+              >
                 Contactar
               </button>
             </div>
@@ -348,7 +424,7 @@ Fecha: ${new Date().toLocaleString('es-ES')}`,
               Comienza hoy mismo
             </h2>
             <p className="text-xl text-gray-600">
-              Únete a cientos de profesionales e instituciones que ya usan BOC Alert
+              Únete a los profesionales e instituciones que ya usan BOC Alert
             </p>
           </div>
           <form onSubmit={handleSubmit} className="bg-gray-50 p-8 rounded-xl shadow-md">
@@ -451,10 +527,125 @@ Fecha: ${new Date().toLocaleString('es-ES')}`,
             </div>
           </div>
           <div className="border-t border-gray-600 mt-8 pt-8 text-center text-gray-300">
-            <p>&copy; 2024 BOC Alert - Tauler Group Ventures S.L. Todos los derechos reservados.</p>
+            <p>&copy; 2025 BOC Alert - Tauler Group Ventures S.L. Todos los derechos reservados.</p>
           </div>
         </div>
       </footer>
+
+      {/* Contact Popup Modal */}
+      {showContactPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-bold text-[#0066CC]">Contactar</h3>
+                <button
+                  onClick={() => setShowContactPopup(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              <form onSubmit={handleContactSubmit} className="space-y-4">
+                <div>
+                  <label htmlFor="contact-name" className="block text-sm font-medium text-gray-700 mb-2">
+                    Nombre *
+                  </label>
+                  <input
+                    type="text"
+                    id="contact-name"
+                    value={contactForm.name}
+                    onChange={(e) => setContactForm({...contactForm, name: e.target.value})}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFD700] focus:border-transparent"
+                    placeholder="Tu nombre completo"
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="contact-email" className="block text-sm font-medium text-gray-700 mb-2">
+                    Email *
+                  </label>
+                  <input
+                    type="email"
+                    id="contact-email"
+                    value={contactForm.email}
+                    onChange={(e) => setContactForm({...contactForm, email: e.target.value})}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFD700] focus:border-transparent"
+                    placeholder="tu@email.com"
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="contact-phone" className="block text-sm font-medium text-gray-700 mb-2">
+                    Teléfono *
+                  </label>
+                  <input
+                    type="tel"
+                    id="contact-phone"
+                    value={contactForm.phone}
+                    onChange={(e) => setContactForm({...contactForm, phone: e.target.value})}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFD700] focus:border-transparent"
+                    placeholder="+34 600 000 000"
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="contact-institution" className="block text-sm font-medium text-gray-700 mb-2">
+                    Institución *
+                  </label>
+                  <input
+                    type="text"
+                    id="contact-institution"
+                    value={contactForm.institution}
+                    onChange={(e) => setContactForm({...contactForm, institution: e.target.value})}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFD700] focus:border-transparent"
+                    placeholder="Nombre de tu empresa o administración"
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="contact-topics" className="block text-sm font-medium text-gray-700 mb-2">
+                    Temas de interés
+                  </label>
+                  <textarea
+                    id="contact-topics"
+                    value={contactForm.topics}
+                    onChange={(e) => setContactForm({...contactForm, topics: e.target.value})}
+                    rows={3}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFD700] focus:border-transparent"
+                    placeholder="Ej: subvenciones, urbanismo, medio ambiente..."
+                  />
+                </div>
+                
+                <button
+                  type="submit"
+                  disabled={isContactSubmitting}
+                  className="w-full bg-[#0066CC] text-white py-3 rounded-lg font-semibold hover:bg-[#004499] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isContactSubmitting ? 'Enviando...' : 'Enviar'}
+                </button>
+                
+                {contactSubmitMessage && (
+                  <div className={`mt-4 p-4 rounded-lg text-center text-sm ${
+                    contactSubmitMessage.includes('error') || contactSubmitMessage.includes('Error')
+                      ? 'bg-red-100 text-red-700 border border-red-200'
+                      : 'bg-green-100 text-green-700 border border-green-200'
+                  }`}>
+                    {contactSubmitMessage}
+                  </div>
+                )}
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
